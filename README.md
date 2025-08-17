@@ -11,11 +11,11 @@ A Rust crate providing **type-safe, validated configuration** for preventing run
 
 ## Overview
 
-`invariance` helps you define configuration structs with strong typing and validation logic. It ensures that configuration loaded from files (currently TOML) is **always validated before use**, preventing null pointer errors, invalid states, and unexpected runtime failures.
+`invariance` helps you define configuration structs with strong typing and validation logic. It ensures that configurations loaded from files (currently TOML and JSON) are **always validated before use**, preventing null pointer errors, invalid states, and unexpected runtime failures.
 
 The crate provides:
 
-- A `Config` trait with a default implementation for parsing configuration from strings.  
+- A `Config` trait with default implementations for parsing configuration from strings in multiple formats (e.g., TOML, JSON).  
 - A `Validate` trait for implementing custom validation logic.  
 - Clear and descriptive error handling via `ConfigError`.  
 - Basic schema generation by printing default values as examples.
@@ -24,7 +24,7 @@ The crate provides:
 
 ## Getting Started
 
-Add `invariance` to your `Cargo.toml` in your project.
+To use `invariance` in your Rust project, add it to your `Cargo.toml` using:
 
 ```bash
 cargo add invariance
@@ -34,13 +34,13 @@ cargo add invariance
 
 ## Features & Roadmap
 
-- [x] **Strongly typed config parsing** from TOML strings  
+- [x] **Strongly typed config parsing** from TOML and JSON strings  
 - [x] **Custom validation** with clear error reporting  
 - [x] **Trait-based design** with minimal boilerplate  
 
 ---
 
-- [ ] Support for additional formats: **JSON, YAML**  
+- [ ] Support for additional formats: **YAML**  
 - [ ] CLI tools for **config validation**  
 - [ ] Macro-driven **validation DSL**  
 - [ ] Schema **generation and introspection**
