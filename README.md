@@ -15,12 +15,11 @@ A Rust crate providing **type-safe, validated configuration** for preventing run
 
 The crate provides:
 
-- A `Config` trait with default implementations for parsing configuration from strings in multiple formats (e.g., TOML, JSON).  
-- A `Validate` trait for implementing custom validation logic.  
-- Clear and descriptive error handling via `ConfigError`.  
-- Basic schema generation by printing default values as examples.
+- A `Config` trait with default implementations for parsing configuration from strings in multiple formats (currently TOML and JSON), enabling flexible config loading without boilerplate.
+- A `Validate` trait for implementing custom, domain-specific validation logic to enforce invariants and prevent invalid config states at runtime.  
+- Clear and descriptive error handling with the `ConfigError` type, supporting error chaining and categorisation for easier debugging and reporting.  
+- Basic schema generation by printing default configuration instances as example outputs in both JSON and TOML formats.
 
----
 
 ## Getting Started
 
@@ -34,13 +33,13 @@ cargo add invariance
 
 ## Features & Roadmap
 
-- [x] **Strongly typed config parsing** from TOML and JSON strings  
-- [x] **Custom validation** with clear error reporting  
-- [x] **Trait-based design** with minimal boilerplate  
+- [x] **Strongly typed config parsing** from TOML and JSON strings
+- [x] **Custom validation** via a trait-based system with clear reporting
+- [x] **Minimal boilerplate** thanks to trait defaults and composable design
 
 ---
 
-- [ ] Support for additional formats: **YAML**  
-- [ ] CLI tools for **config validation**  
-- [ ] Macro-driven **validation DSL**  
-- [ ] Schema **generation and introspection**
+- [ ] Support for additional serialization formats, starting with **YAML**  
+- [ ] CLI tools for **config validation** and schema inspection  
+- [ ] Macro-driven **validation DSL** to simplify and standardise validation logic  
+- [ ] Advanced schema **generation and introspection** features for improved developer experience

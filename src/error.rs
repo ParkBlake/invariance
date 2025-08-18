@@ -1,71 +1,81 @@
+use std::error::Error;
 use std::fmt;
 
-/// Error type for configuration parsing and validation issues.
+/// Error type representing issues encountered during configuration parsing or validation.
+///
+/// This error supports optional categorisation (`kind`), contextual information
+/// (e.g., the field or file involved), and chaining of underlying source errors.
 #[derive(Debug)]
 pub struct ConfigError {
-    /// Human-readable description of the error.
+    /// A human-readable description of the error.
     message: String,
-    /// Optional source of the error, e.g., field name or file path.
-    source: Option<String>,
-    /// Optional kind/category of the error, e.g., "ParseError", "ValidationError".
+
+    /// Optional contextual detail (e.g., field name, file path, or section).
+    context: Option<String>,
+
+    /// Optional underlying error that triggered this one.
+    source: Option<Box<dyn Error + Send + Sync + 'static>>,
+
+    /// Optional classification of the error (e.g., `"ParseError"`, `"ValidationError"`).
     kind: Option<String>,
 }
 
 impl ConfigError {
-    /// Create a new `ConfigError` with the given message.
-    ///
-    /// # Arguments
-    ///
-    /// * `msg` - A message describing the error.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use invariance::ConfigError;
-    ///
-    /// let err = ConfigError::new("invalid config value");
-    /// ```
+    /// Constructs a new `ConfigError` with the given message.
     pub fn new(msg: impl Into<String>) -> Self {
-        ConfigError {
+        Self {
             message: msg.into(),
+            context: None,
             source: None,
             kind: None,
         }
     }
 
-    /// Adds source information to the error.
+    /// Attaches additional context to the error.
     ///
-    /// # Arguments
-    ///
-    /// * `source` - The source or context of the error.
-    pub fn with_source(mut self, source: impl Into<String>) -> Self {
-        self.source = Some(source.into());
+    /// Useful for indicating where or how the error occurred (e.g., `"field: port"`).
+    pub fn with_context(mut self, ctx: impl Into<String>) -> Self {
+        self.context = Some(ctx.into());
         self
     }
 
-    /// Adds kind/category information to the error.
+    /// Specifies a category or kind for the error.
     ///
-    /// # Arguments
-    ///
-    /// * `kind` - The kind/category of the error.
+    /// Examples include `"ParseError"`, `"ValidationError"`, or `"MissingField"`.
     pub fn with_kind(mut self, kind: impl Into<String>) -> Self {
         self.kind = Some(kind.into());
+        self
+    }
+
+    /// Attaches a source error, allowing for error chaining.
+    ///
+    /// Useful for preserving the root cause of parsing or I/O failures.
+    pub fn with_source<E>(mut self, source: E) -> Self
+    where
+        E: Error + Send + Sync + 'static,
+    {
+        self.source = Some(Box::new(source));
         self
     }
 }
 
 impl fmt::Display for ConfigError {
-    /// Formats the error for display.
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Configuration error")?;
         if let Some(kind) = &self.kind {
             write!(f, " [{}]", kind)?;
         }
-        if let Some(source) = &self.source {
-            write!(f, " in {}", source)?;
+        if let Some(ctx) = &self.context {
+            write!(f, " in {}", ctx)?;
         }
         write!(f, ": {}", self.message)
     }
 }
 
-impl std::error::Error for ConfigError {}
+impl Error for ConfigError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        self.source
+            .as_ref()
+            .map(|boxed| boxed.as_ref() as &(dyn Error + 'static))
+    }
+}

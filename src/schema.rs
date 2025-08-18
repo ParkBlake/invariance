@@ -1,25 +1,47 @@
 use crate::error::ConfigError;
 use serde::{Serialize, de::DeserializeOwned};
 
-/// Generate and print a JSON-formatted example configuration for type `T`.
+/// Prints the default configuration as an example in both JSON and TOML formats.
 ///
-/// This function serialises the default instance of `T` to a pretty-printed JSON string,
-/// providing a template or reference for configuration authors.
+/// This is not a formal schema definition, but a concrete instantiation of the
+/// `Default` implementation for a type `T`, serialised into both supported formats.
+/// It provides users with a clear reference for how their configuration files should be structured.
 ///
-/// Note that this is not a formal schema (e.g. JSON Schema), but rather
-/// a concrete example based on the type’s `Default` implementation.
+/// This is particularly useful for documentation, onboarding, or generating starter config templates.
+///
+/// # Type Parameters
+///
+/// - `T`: The configuration type. Must implement [`Default`], [`Serialize`], and [`DeserializeOwned`].
+///
+/// # Output
+///
+/// Prints two formatted blocks to stdout:
+/// - A JSON representation.
+/// - A TOML representation.
 ///
 /// # Errors
 ///
-/// Returns a `ConfigError` if serialisation fails.
+/// Returns a [`ConfigError`] if either JSON or TOML serialisation fails.
 pub fn print_schema<T>() -> Result<(), ConfigError>
 where
     T: Serialize + Default + DeserializeOwned,
 {
     let default = T::default();
-    let json = serde_json::to_string_pretty(&default)
-        .map_err(|e| ConfigError::new(format!("Failed to serialise default config: {e}")))?;
 
-    println!("{json}");
+    let json = serde_json::to_string_pretty(&default).map_err(|e| {
+        ConfigError::new("Failed to serialise default config to JSON")
+            .with_kind("SerialisationError")
+            .with_source(e)
+    })?;
+
+    let toml = toml::to_string_pretty(&default).map_err(|e| {
+        ConfigError::new("Failed to serialise default config to TOML")
+            .with_kind("SerialisationError")
+            .with_source(e)
+    })?;
+
+    println!("--- JSON Example ---\n{json}\n");
+    println!("--- TOML Example ---\n{toml}");
+
     Ok(())
 }
